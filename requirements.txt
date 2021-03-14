@@ -1,0 +1,5 @@
+numpy
+scipy~=1.6
+pyserial
+PyQt5~=5.15
+pyqtgraph
