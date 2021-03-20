@@ -42,7 +42,7 @@ class MainWindow(QMainWindow):
         # periodically update graph according to new data
         self.graph_update_timer = QTimer()
         self.graph_update_timer.timeout.connect(self.graph.update_graph)
-        self.graph_update_timer.setInterval(30)
+        self.graph_update_timer.setInterval(16)  # 60 FPS
 
     def _init_menu(self):
         menu_bar = self.menuBar()

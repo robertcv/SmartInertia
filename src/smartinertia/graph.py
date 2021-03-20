@@ -34,10 +34,12 @@ class BarPlotWidget(pg.PlotWidget):
     def update_graph(self):
         """Get updated bar plot data and redraw the bars."""
         h = self.data.get_bar_data()
+        if not h:
+            return
+
         x = list(range(1, len(h) + 1))
         brushes = np.array([orange_brush for _ in range(len(h))])
-        if len(brushes) >= 2:
-            brushes[:2] = gray_brush
+        brushes[:2] = gray_brush
         if len(brushes) >= 8:
             brushes[8:] = gray_brush
         self.bar_plot.setOpts(x=x, height=h, brushes=brushes)
