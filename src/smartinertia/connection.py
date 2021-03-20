@@ -15,7 +15,7 @@ def get_ports():
         serial_ports = list(grep(r'COM*'))
     elif os.name == 'posix':
         serial_ports = list(grep(r'USB*'))
-    log.info(f"Current OS name {os.name}.")
+    log.info(f"Current OS name: {os.name}.")
 
     serial_ports = [p.device for p in serial_ports]
     log.info(f"Available serial ports: {','.join(serial_ports)}.")

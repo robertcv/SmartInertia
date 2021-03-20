@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
             self.connection = None
             QMessageBox.warning(self, "Connection failed!",
                                 "Cannot connect to flywheel!\nTry reconnecting USB and/or restarting software.")
-            log.error(f"Connection to {self.connection_port} could not be established!")
+            log.exception(f"Connection to {self.connection_port} could not be established!")
             return
 
         # ConnectionThread continuously reads from the serial port and sends incoming data to Data
