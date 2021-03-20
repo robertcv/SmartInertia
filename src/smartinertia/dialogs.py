@@ -1,4 +1,6 @@
 import logging
+from collections import namedtuple
+from typing import Optional
 
 from PyQt5.QtCore import QSettings
 from PyQt5.QtGui import QDoubleValidator
@@ -14,6 +16,9 @@ LOADS = ["0.025", "0.05", "0.075", "0.1",
 
 log = logging.getLogger(__name__)
 
+RunConf = namedtuple('RunConf', ["name", "weight", "load", "pulley"])
+ConnConf = namedtuple('ConnConf', ['port'])
+
 
 class RunDialog(QDialog):
     """Configure run state."""
@@ -21,7 +26,7 @@ class RunDialog(QDialog):
         super().__init__()
         self.setWindowTitle("Run")
         self.m_settings = master.settings  # type: QSettings
-        self.data = None
+        self.run_conf = None  # type: Optional[RunConf]
 
         self.name_label = QLineEdit()
         self.name_label.setText(self.m_settings.value('run/name', type=str))
@@ -64,16 +69,17 @@ class RunDialog(QDialog):
 
     def accept(self):
         log.info("run dialog accepted.")
-        self.data = {
-            "name": self.name_label.text(),
-            "weight": self.weight_label.text(),
-            "load": self.load_combo_box.currentText(),
-            "pulley": self.pulley_checkbox.isChecked(),
-        }
-        self.m_settings.setValue('run/name', self.data["name"])
-        self.m_settings.setValue('run/weight', self.data["weight"])
-        self.m_settings.setValue('run/load', self.data["load"])
-        self.m_settings.setValue('run/pulley', self.data["pulley"])
+        self.run_conf = RunConf(
+            name=self.name_label.text(),
+            weight=float(self.weight_label.text().replace(',', '.')),
+            load=float(self.load_combo_box.currentText()),
+            pulley=self.pulley_checkbox.isChecked(),
+        )
+        log.info(f"Run configuration: {self.run_conf}.")
+        self.m_settings.setValue('run/name', self.run_conf.name)
+        self.m_settings.setValue('run/weight', self.run_conf.weight)
+        self.m_settings.setValue('run/load', self.run_conf.load)
+        self.m_settings.setValue('run/pulley', self.run_conf.pulley)
         self.m_settings.sync()
         self.close()
 
@@ -84,7 +90,7 @@ class ConnectionDialog(QDialog):
         super().__init__()
         self.setWindowTitle("Connection")
         self.m_settings = master.settings  # type: QSettings
-        self.data = None
+        self.conn_conf = None  # type: Optional[ConnConf]
 
         current_ports = get_ports()
         self.port_comboBox = QComboBox()
@@ -118,11 +124,9 @@ class ConnectionDialog(QDialog):
 
     def accept(self):
         log.info("Connection dialog accepted.")
-        self.data = {
-            "port": self.port_comboBox.currentText(),
-        }
-        log.info(f"Port {self.data['port']} was selected.")
-        self.m_settings.setValue('connection/port', self.data["port"])
+        self.conn_conf = ConnConf(port=self.port_comboBox.currentText())
+        log.info(f"Port {self.conn_conf.port} was selected.")
+        self.m_settings.setValue('connection/port', self.conn_conf.port)
         self.m_settings.sync()
         self.close()
 

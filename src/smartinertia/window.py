@@ -25,7 +25,6 @@ class MainWindow(QMainWindow):
         self.connection = None  # type: Optional[Connection]
         self.connection_port = None  # type: Optional[str]
         self.connection_thread = None  # type: Optional[ConnectionThread]
-        self.run_conf = None  # type: Optional[dict]
 
         self.settings = settings
 
@@ -70,13 +69,13 @@ class MainWindow(QMainWindow):
             log.info("Connection port was not setup. Open connection dialog.")
             self.connect()
 
-        dialog = RunDialog(self)
-        dialog.exec_()
-        if dialog.data is None:
+        run_dialog = RunDialog(self)
+        run_dialog.exec_()
+        if run_dialog.run_conf is None:
             log.info("Start dialog not accepted.")
             return
         else:
-            self.run_conf = dialog.data
+            _run_conf = run_dialog.run_conf
 
         # close existing thread and connection
         self._close_connection()
@@ -84,7 +83,7 @@ class MainWindow(QMainWindow):
         # clear data from previous run
         self.graph.clear()
         self.data.clear()
-        self.data.run_conf = self.run_conf
+        self.data.set_run_conf(_run_conf)
 
         # setup new connection
         try:
@@ -120,13 +119,13 @@ class MainWindow(QMainWindow):
 
     def connect(self):
         log.info("Connect button clicked!")
-        dialog = ConnectionDialog(self)
-        dialog.exec_()
+        conn_dialog = ConnectionDialog(self)
+        conn_dialog.exec_()
 
-        if dialog.data is None:
+        if conn_dialog.conn_conf is None:
             log.info("Connection dialog not accepted.")
         else:
-            self.connection_port = dialog.data["port"]
+            self.connection_port = conn_dialog.conn_conf.port
 
     def _close_connection(self):
         if self.connection_thread is not None:
