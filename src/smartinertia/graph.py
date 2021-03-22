@@ -4,13 +4,15 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5.QtCore import QRectF
 
+from smartinertia.data import START_RUNS, COUNTED_RUNS
+
 log = logging.getLogger(__name__)
 
 gray_brush = pg.mkBrush(pg.mkColor(150, 150, 150))
 orange_brush = pg.mkBrush(pg.mkColor(255, 77, 6))
 
-MAX_H = 10
-MAX_X = 11
+MAX_H = 500
+MAX_X = START_RUNS + COUNTED_RUNS + 1
 
 
 class BarPlotWidget(pg.PlotWidget):
@@ -38,15 +40,14 @@ class BarPlotWidget(pg.PlotWidget):
             return
 
         x = list(range(1, len(h) + 1))
-        brushes = np.array([orange_brush for _ in range(len(h))])
-        brushes[:2] = gray_brush
-        if len(brushes) >= 8:
-            brushes[8:] = gray_brush
+        brushes = np.array([gray_brush for _ in range(len(h))])
+        brushes[START_RUNS:COUNTED_RUNS + START_RUNS] = orange_brush
         self.bar_plot.setOpts(x=x, height=h, brushes=brushes)
+
         max_h = max(max(h), MAX_H) * 1.05
         max_x = max(max(x), MAX_X) + 0.2
         self.setRange(QRectF(0.4, 0, max_x, max_h), padding=0)
 
-    def clear(self):
-        self.bar_plot.setOpts(x=[], height=[])
+    def clear_graph(self):
+        self.bar_plot.setOpts(x=[], height=[], brushes=[])
         log.info("Cleared bar plot.")

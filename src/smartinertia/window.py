@@ -34,7 +34,7 @@ class MainWindow(QMainWindow):
         self._init_graph()
 
     def _init_graph(self):
-        self.data = Data()
+        self.data = Data(self)
         # BarPlotWidget uses Data as a queue from serial
         self.graph = BarPlotWidget(self.data)
         self.setCentralWidget(self.graph)
@@ -65,6 +65,13 @@ class MainWindow(QMainWindow):
         # stop updating graph
         self.graph_update_timer.stop()
 
+        # close existing thread and connection
+        self._close_connection()
+
+        # clear data from previous run
+        self.data.clear()
+        self.graph.clear_graph()
+
         if self.connection_port is None:
             log.info("Connection port was not setup. Open connection dialog.")
             self.connect()
@@ -75,15 +82,7 @@ class MainWindow(QMainWindow):
             log.info("Start dialog not accepted.")
             return
         else:
-            _run_conf = run_dialog.run_conf
-
-        # close existing thread and connection
-        self._close_connection()
-
-        # clear data from previous run
-        self.graph.clear()
-        self.data.clear()
-        self.data.set_run_conf(_run_conf)
+            self.data.set_run_conf(run_dialog.run_conf)
 
         # setup new connection
         try:
