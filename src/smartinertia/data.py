@@ -3,12 +3,11 @@ from collections import namedtuple
 from typing import Optional
 
 import numpy as np
-from scipy.signal import butter, filtfilt, argrelmax
 from PyQt5.QtWidgets import QMessageBox
+from scipy.signal import argrelmax, butter, filtfilt
 
-from smartinertia.dialogs import RunConf, ReportDialog
-from smartinertia.save import save_run, save_data
-
+from smartinertia.dialogs import ReportDialog, RunConf
+from smartinertia.save import save_data, save_run
 
 START_RUNS = 3
 COUNTED_RUNS = 6

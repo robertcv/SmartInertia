@@ -4,7 +4,7 @@ import numpy as np
 import pyqtgraph as pg
 from PyQt5.QtCore import QRectF
 
-from smartinertia.data import START_RUNS, COUNTED_RUNS
+from smartinertia.data import COUNTED_RUNS, START_RUNS
 
 log = logging.getLogger(__name__)
 

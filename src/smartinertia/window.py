@@ -2,8 +2,8 @@ import logging
 from typing import Optional
 
 from PyQt5.QtCore import QSettings, QTimer
-from PyQt5.QtWidgets import QAction, QMainWindow, QMessageBox
 from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import QAction, QMainWindow, QMessageBox
 
 from smartinertia.conn_thread import ConnectionThread
 from smartinertia.connection import Connection
