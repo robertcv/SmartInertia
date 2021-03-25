@@ -3,6 +3,7 @@ from typing import Optional
 
 from PyQt5.QtCore import QSettings, QTimer
 from PyQt5.QtWidgets import QAction, QMainWindow, QMessageBox
+from PyQt5.QtGui import QIcon
 
 from smartinertia.conn_thread import ConnectionThread
 from smartinertia.connection import Connection
@@ -21,6 +22,7 @@ class MainWindow(QMainWindow):
         self.setGeometry(50, 50, 800, 500)
         self.setMinimumSize(800, 500)
         self.setWindowTitle('SmartInertia')
+        self.setWindowIcon(QIcon("icon.png"))
 
         self.connection = None  # type: Optional[Connection]
         self.connection_port = None  # type: Optional[str]
