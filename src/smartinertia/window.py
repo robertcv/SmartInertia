@@ -131,8 +131,8 @@ class MainWindow(QMainWindow):
     def _close_connection(self):
         if self.connection_thread is not None:
             # threads are like women, you can't just tell them to stop
-            # you can only suggest it and than hope for the best
-            self.connection_thread.quit()
+            # you can only suggest it and then hope for the best
+            self.connection_thread.stop = True
             log.info("Connection thread stopped.")
 
         if self.connection is not None:

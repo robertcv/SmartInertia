@@ -16,10 +16,12 @@ class ConnectionThread(QThread):
         super().__init__()
         self.con = con
         self.sig.connect(sig_receiver)
+        self.stop = False
         log.info("Create connection thread.")
 
     def run(self):
-        while True:
+        """This function is run when the thread starts. The thread stops if this function returns."""
+        while not self.stop:
             try:
                 line = self.con.readline()
                 t, f = line.split(b',')
