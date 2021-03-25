@@ -115,8 +115,7 @@ class MainWindow(QMainWindow):
         self._close_connection()
 
         # save and show report
-        self.data.save_report()
-        self.data.show_report()
+        self.data.report()
 
     def connect(self):
         log.info("Connect button clicked!")

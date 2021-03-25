@@ -6,7 +6,8 @@ import numpy as np
 from scipy.signal import butter, filtfilt, argrelmax
 from PyQt5.QtWidgets import QMessageBox
 
-from smartinertia.dialogs import RunConf
+from smartinertia.dialogs import RunConf, ReportDialog
+from smartinertia.save import save_run, save_data
 
 
 START_RUNS = 3
@@ -121,7 +122,8 @@ class Data:
         if len(self.raw_x) < SAMPLES_FOR_FILTER or (self.raw_x[-1] - self.raw_x[0]) < 0.1:
             return 0
 
-        inter_data = interpolation(DataSet(x=self.raw_x[-SAMPLES_FOR_FILTER:], y=self.raw_y[-SAMPLES_FOR_FILTER:]))
+        inter_data = interpolation(DataSet(x=self.raw_x[-SAMPLES_FOR_FILTER:],
+                                           y=self.raw_y[-SAMPLES_FOR_FILTER:]))
         filtered_data = butter_lowpass_filter(inter_data, cutoff=CUTOFF_FREQ)
 
         frequency = filtered_data.y
@@ -139,14 +141,19 @@ class Data:
         power = force * linear_velocity
         return power[-1]
 
-    def calc_stats(self):
-        self.__save_data(DataSet(x=self.raw_x, y=self.raw_y), "raw_data.csv")
+    def calc_stats(self) -> RunData:
+        """Calculate all the stats for the current run."""
+        raw_dataset = DataSet(x=self.raw_x, y=self.raw_y)
+        # save raw measurements for potential analysis
+        save_data(raw_dataset)
+
+        # interpolate points as they are not equally spaced
         filtered_data = butter_lowpass_filter(
-            interpolation(DataSet(x=self.raw_x, y=self.raw_y)),
+            interpolation(raw_dataset),
             cutoff=CUTOFF_FREQ
         )
-        self.__save_data(filtered_data, "filtered_data.csv")
 
+        # calculate all the statistics, involves heavy physics
         frequency = filtered_data.y
         angular_velocity = frequency * 2 * np.pi
         linear_velocity = angular_velocity * RADIUS
@@ -160,6 +167,7 @@ class Data:
 
         # transform time of new bar to the closest position
         new_bar_pos = [np.abs(filtered_data.x - new_pos).argmin() for new_pos in self.new_bar_time]
+        new_bar_pos.append(len(filtered_data.x) - 1)
 
         # in segments find min to exactly cut segments
         exact_new_segment = [0]
@@ -170,11 +178,12 @@ class Data:
             exact_new_segment.append(middle + s_min)
 
         # remove first START_RUNS and more than COUNTED_RUNS
-        exact_new_segment = exact_new_segment[START_RUNS:START_RUNS + COUNTED_RUNS + 3]
+        exact_new_segment = exact_new_segment[START_RUNS:START_RUNS + COUNTED_RUNS + 1]
         log.debug(f"number of segments: {len(exact_new_segment) - 1}, cut x: {filtered_data.x[exact_new_segment]}")
 
         results = []
         for i, j in zip(exact_new_segment[:-1], exact_new_segment[1:]):
+            # calculate all statistics for each repetition
             m = filtered_data.y[i:j].argmax() + i
             results.append(RunData(
                 v_con_max=find_second_peak(linear_velocity[i:m]),
@@ -191,6 +200,7 @@ class Data:
                 p_ecc_mean=power[m:j].mean(),
             ))
 
+        # the end result statistics are the mean over all repetitions
         end_result = RunData(
             v_con_max=np.mean([r.v_con_max for r in results]),
             v_ecc_max=np.mean([r.v_ecc_max for r in results]),
@@ -208,32 +218,56 @@ class Data:
 
         return end_result
 
-    def get_bar_data(self):
+    def get_bar_data(self) -> list:
         return self.bar_h
 
-    def save_report(self):
+    def report(self):
         if len(self.bar_h) < START_RUNS + 1:
             QMessageBox.warning(self.master, "Invalid measurement!",
-                                "Measurement must have at least 1 valid (orange bar) repetition!\n"
+                                "Measurement must have at least 1 valid repetition!\n"
                                 "Metrics could not be calculated!")
             return
         elif len(self.bar_h) < START_RUNS + COUNTED_RUNS + 1:
             QMessageBox.warning(self.master, "Insufficient measurement!",
-                                f"To ensure measurements accuracy {START_RUNS + COUNTED_RUNS + 1} repetitions (bars) are advised!\n"
+                                f"To ensure measurements accuracy {START_RUNS + COUNTED_RUNS + 1} repetitions are advised!\n"
                                 "Calculated metrics may be inaccurate!")
-        res = self.calc_stats()
-        for k, v in res._asdict().items():
-            print(k, v)
+        run_data = self.calc_stats()
+        save_run(run_data, self.run_conf)
+        self.show_report(run_data)
 
     @staticmethod
-    def __save_data(data: DataSet, filename: str):
-        """For debugging, save dataset to file."""
-        with open(filename, 'w') as file:
-            for x, y in zip(data.x, data.y):
-                file.write(','.join([str(x), str(y)]) + '\n')
-
-    def show_report(self) -> str:
-        pass
+    def show_report(run_data: RunData):
+        report_html = f"""
+        <table style="border: none;">
+        <tbody>
+          <tr><td></td><td colspan="2">Max</td><td colspan="2">Mean</td></tr>
+          <tr><td></td><td>Con</td><td>Ecc</td><td>Con</td><td>Ecc</td></tr>
+          <tr>
+            <td>Velocity:</td>
+            <td>{run_data.v_con_max:.2f}</td>
+            <td>{run_data.v_ecc_max:.2f}</td>
+            <td>{run_data.v_con_mean:.2f}</td>
+            <td>{run_data.v_ecc_mean:.2f}</td>
+          </tr>
+          <tr>
+            <td>Force:</td>
+            <td>{run_data.f_con_max:.0f}</td>
+            <td>{run_data.f_ecc_max:.0f}</td>
+            <td>{run_data.f_con_mean:.0f}</td>
+            <td>{run_data.f_ecc_mean:.0f}</td>
+          </tr>
+          <tr>
+            <td>Power</td>
+            <td>{run_data.p_con_max:.0f}</td>
+            <td>{run_data.p_ecc_max:.0f}</td>
+            <td>{run_data.p_con_mean:.0f}</td>
+            <td>{run_data.p_ecc_mean:.0f}</td>
+          </tr>
+        </tbody>
+        </table>
+        """
+        report_dialog = ReportDialog(report_html)
+        report_dialog.exec_()
 
     def clear(self):
         self.raw_x = []
