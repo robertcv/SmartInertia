@@ -24,5 +24,5 @@ pip install -r requirements-dev.txt
 
 To create the exe run:
 ```bash
-pyinstaller --name SmartInertia --windowed --onefile --icon=icon.ico smartinertia_gui.py
+pyinstaller --name SmartInertia --paths=src\smartinertia --windowed --onefile --icon=icon.ico smartinertia_gui.py
 ```
