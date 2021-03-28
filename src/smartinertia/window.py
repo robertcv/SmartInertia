@@ -5,6 +5,7 @@ from PyQt5.QtCore import QSettings, QTimer
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QAction, QMainWindow, QMessageBox
 
+from smartinertia import __version__
 from smartinertia.conn_thread import ConnectionThread
 from smartinertia.connection import Connection
 from smartinertia.data import Data
@@ -21,7 +22,7 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setGeometry(50, 50, 800, 500)
         self.setMinimumSize(800, 500)
-        self.setWindowTitle('SmartInertia')
+        self.setWindowTitle(f'Smart Inertia - v{__version__}')
         self.setWindowIcon(QIcon("icon.png"))
 
         self.connection = None  # type: Optional[Connection]
