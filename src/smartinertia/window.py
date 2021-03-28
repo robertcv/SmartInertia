@@ -77,6 +77,9 @@ class MainWindow(QMainWindow):
         if self.connection_port is None:
             log.info("Connection port was not setup. Open connection dialog.")
             self.connect()
+            if self.connection_port is None:
+                log.info("Connection port was not setup a second time.")
+                return
 
         run_dialog = RunDialog(self)
         run_dialog.exec_()
@@ -119,13 +122,23 @@ class MainWindow(QMainWindow):
 
     def connect(self):
         log.info("Connect button clicked!")
+
+        # clear port to not interfere with new connection
+        self.connection_port = None
+
         conn_dialog = ConnectionDialog(self)
         conn_dialog.exec_()
 
         if conn_dialog.conn_conf is None:
             log.info("Connection dialog not accepted.")
+        elif not conn_dialog.conn_conf.port:
+            log.info("No connections available.")
         else:
             self.connection_port = conn_dialog.conn_conf.port
+
+        if self.connection_port is None:
+            QMessageBox.warning(self, "No connection!",
+                                "No connection was established!")
 
     def _close_connection(self):
         if self.connection_thread is not None:
