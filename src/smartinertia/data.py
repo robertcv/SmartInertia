@@ -203,18 +203,18 @@ class Data:
 
         # the end result statistics are the mean over all repetitions
         end_result = RunData(
-            v_con_max=np.mean([r.v_con_max for r in results]),
-            v_ecc_max=np.mean([r.v_ecc_max for r in results]),
-            v_con_mean=np.mean([r.v_con_mean for r in results]),
-            v_ecc_mean=np.mean([r.v_ecc_mean for r in results]),
-            f_con_max=np.mean([r.f_con_max for r in results]),
-            f_ecc_max=np.mean([r.f_ecc_max for r in results]),
-            f_con_mean=np.mean([r.f_con_mean for r in results]),
-            f_ecc_mean=np.mean([r.f_ecc_mean for r in results]),
-            p_con_max=np.mean([r.p_con_max for r in results]),
-            p_ecc_max=np.mean([r.p_ecc_max for r in results]),
-            p_con_mean=np.mean([r.p_con_mean for r in results]),
-            p_ecc_mean=np.mean([r.p_ecc_mean for r in results]),
+            v_con_max=round(np.mean([r.v_con_max for r in results]), 2),
+            v_ecc_max=round(np.mean([r.v_ecc_max for r in results]), 2),
+            v_con_mean=round(np.mean([r.v_con_mean for r in results]), 2),
+            v_ecc_mean=round(np.mean([r.v_ecc_mean for r in results]), 2),
+            f_con_max=round(np.mean([r.f_con_max for r in results]), 0),
+            f_ecc_max=round(np.mean([r.f_ecc_max for r in results]), 0),
+            f_con_mean=round(np.mean([r.f_con_mean for r in results]), 0),
+            f_ecc_mean=round(np.mean([r.f_ecc_mean for r in results]), 0),
+            p_con_max=round(np.mean([r.p_con_max for r in results]), 0),
+            p_ecc_max=round(np.mean([r.p_ecc_max for r in results]), 0),
+            p_con_mean=round(np.mean([r.p_con_mean for r in results]), 0),
+            p_ecc_mean=round(np.mean([r.p_ecc_mean for r in results]), 0),
         )
 
         return end_result
