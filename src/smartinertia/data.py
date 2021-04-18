@@ -12,8 +12,8 @@ from smartinertia.save import save_data, save_run
 START_RUNS = 3
 COUNTED_RUNS = 6
 
-MIN_FREQ = 1
-SAMPLES_FOR_FILTER = 18
+MIN_FREQ_START = 2
+SAMPLES_FOR_FILTER = 30
 
 SAMPLING_FREQ = 1000
 CUTOFF_FREQ = 10
@@ -90,7 +90,7 @@ class Data:
         log.debug(f"point: {point}")
 
         if not self.run_started:
-            if y > MIN_FREQ:
+            if y > MIN_FREQ_START:
                 log.debug(f"Run started!")
                 self.bar_h.append(0)
                 self.new_bar_time.append(0)
@@ -118,7 +118,7 @@ class Data:
 
     def calc_recent_power(self) -> float:
         """Calculate power using recent samples."""
-        if len(self.raw_x) < SAMPLES_FOR_FILTER or (self.raw_x[-1] - self.raw_x[0]) < 0.1:
+        if len(self.raw_x) < SAMPLES_FOR_FILTER or (self.raw_x[-1] - self.raw_x[0]) < 0.2:
             return 0
 
         inter_data = interpolation(DataSet(x=self.raw_x[-SAMPLES_FOR_FILTER:],
