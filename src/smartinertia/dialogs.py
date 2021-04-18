@@ -69,9 +69,13 @@ class RunDialog(QDialog):
 
     def accept(self):
         log.info("run dialog accepted.")
+        weight = 0
+        if self.weight_label.text():
+            weight = float(self.weight_label.text().replace(',', '.'))
+
         self.run_conf = RunConf(
             name=self.name_label.text(),
-            weight=float(self.weight_label.text().replace(',', '.')),
+            weight=weight,
             load=float(self.load_combo_box.currentText()),
             pulley=self.pulley_checkbox.isChecked(),
         )
