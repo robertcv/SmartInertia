@@ -138,7 +138,8 @@ class Data:
         force = force + (self.run_conf.weight * (9.8 + linear_acceleration))
 
         power = force * linear_velocity
-        return power[-1]
+        # take middle value to negate side effect of processing appearing on edges
+        return power[len(power) // 2]
 
     def calc_stats(self) -> RunData:
         """Calculate all the stats for the current run."""
