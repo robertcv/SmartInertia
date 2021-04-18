@@ -1,9 +1,9 @@
 import logging
 from typing import Optional
 
-from PyQt5.QtCore import QSettings, QTimer
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QAction, QMainWindow, QMessageBox
+from PyQt5.QtCore import QSettings, QSize, QTimer
+from PyQt5.QtGui import QIcon, QMovie
+from PyQt5.QtWidgets import QAction, QLabel, QMainWindow, QMessageBox
 
 from smartinertia import __version__
 from smartinertia.conn_thread import ConnectionThread
@@ -62,6 +62,17 @@ class MainWindow(QMainWindow):
         connection_action.triggered.connect(self.connect)
         menu_bar.addAction(connection_action)
 
+        # add a spinning gif to show when a device is connected
+        connected_gif = QMovie("loading.gif")
+        connected_gif.start()
+        self.connected_label = QLabel("abc")
+        self.connected_label.setMargin(1.5)
+        label_size = self.connected_label.sizeHint()
+        connected_gif.setScaledSize(QSize(label_size.height(), label_size.height()))
+        self.connected_label.setMovie(connected_gif)
+        self.connected_label.hide()
+        menu_bar.setCornerWidget(self.connected_label)
+
     def start(self):
         log.info("Start button clicked!")
 
@@ -108,12 +119,14 @@ class MainWindow(QMainWindow):
 
         # start updating graph
         self.graph_update_timer.start()
+        self.connected_label.show()
 
     def stop(self):
         log.info("Stop button clicked!")
 
         # stop updating graph
         self.graph_update_timer.stop()
+        self.connected_label.hide()
 
         # stop and remove connection and threads
         self._close_connection()
