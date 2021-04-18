@@ -81,6 +81,7 @@ class Data:
         self.descending_freq = False
         self.run_started = False
         self.run_conf = None  # type: Optional[RunConf]
+        self.run_saved = False
 
     def set_run_conf(self, conf: RunConf):
         self.run_conf = conf
@@ -232,7 +233,9 @@ class Data:
                                 f"To ensure measurements accuracy {START_RUNS + COUNTED_RUNS + 1} repetitions are advised!\n"
                                 "Calculated metrics may be inaccurate!")
         run_data = self.calc_stats()
-        save_run(run_data, self.run_conf)
+        if not self.run_saved:
+            save_run(run_data, self.run_conf)
+            self.run_saved = True
         self.show_report(run_data)
 
     @staticmethod
@@ -277,4 +280,5 @@ class Data:
         self.new_bar_time = []
         self.descending_freq = False
         self.run_started = False
+        self.run_saved = False
         log.info("Data cleared.")
