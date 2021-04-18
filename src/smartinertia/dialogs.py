@@ -2,11 +2,11 @@ import logging
 from collections import namedtuple
 from typing import Optional
 
-from PyQt5.QtCore import QSettings
-from PyQt5.QtGui import QDoubleValidator
+from PyQt5.QtCore import QSettings, Qt
+from PyQt5.QtGui import QDoubleValidator, QIntValidator
 from PyQt5.QtWidgets import (QCheckBox, QComboBox, QDialog, QDialogButtonBox,
-                             QGridLayout, QLabel, QLineEdit, QPushButton,
-                             QVBoxLayout)
+                             QFrame, QGridLayout, QLabel, QLineEdit,
+                             QPushButton, QVBoxLayout)
 
 from smartinertia.connection import get_ports
 
@@ -16,8 +16,15 @@ LOADS = ["0.025", "0.05", "0.075", "0.1",
 
 log = logging.getLogger(__name__)
 
-RunConf = namedtuple('RunConf', ["name", "weight", "load", "pulley"])
+RunConf = namedtuple('RunConf', ["name", "weight", "load", "pulley", "target_check", "target_value"])
 ConnConf = namedtuple('ConnConf', ['port'])
+
+
+class QHLine(QFrame):
+    def __init__(self):
+        super(QHLine, self).__init__()
+        self.setFrameShape(QFrame.HLine)
+        self.setFrameShadow(QFrame.Sunken)
 
 
 class RunDialog(QDialog):
@@ -42,6 +49,14 @@ class RunDialog(QDialog):
         self.pulley_checkbox = QCheckBox()
         self.pulley_checkbox.setChecked(self.m_settings.value('run/pulley', type=bool))
 
+        self.target_edit = QLineEdit()
+        self.target_edit.setValidator(QIntValidator(0, 10_000))
+        self.target_edit.setText(self.m_settings.value('run/target_value', type=str))
+
+        self.target_checkbox = QCheckBox()
+        self.target_checkbox.setChecked(self.m_settings.value('run/target_check', type=bool))
+        self.target_checkbox.stateChanged.connect(self._hide_target)
+
         grid = QGridLayout()
         grid.addWidget(QLabel("Name: "), 0, 0)
         grid.addWidget(self.name_label, 0, 1)
@@ -55,6 +70,16 @@ class RunDialog(QDialog):
         grid.addWidget(QLabel("Uses pulley: "), 3, 0)
         grid.addWidget(self.pulley_checkbox, 3, 1)
 
+        grid.addWidget(QHLine(), 4, 0, 1, 2)
+
+        grid.addWidget(QLabel("Set target: "), 5, 0)
+        grid.addWidget(self.target_checkbox, 5, 1)
+
+        self.target_label = QLabel("Target value: ")
+        grid.addWidget(self.target_label, 6, 0)
+        grid.addWidget(self.target_edit, 6, 1)
+        self._hide_target(self.target_checkbox.checkState())
+
         button_box = QDialogButtonBox(QDialogButtonBox.Ok |
                                       QDialogButtonBox.Cancel)
 
@@ -67,23 +92,36 @@ class RunDialog(QDialog):
         self.setLayout(main_layout)
         log.info("Opened run dialog.")
 
+    def _hide_target(self, state):
+        self.target_edit.setEnabled(state == Qt.Checked)
+        self.target_label.setEnabled(state == Qt.Checked)
+
     def accept(self):
         log.info("run dialog accepted.")
+
         weight = 0
         if self.weight_label.text():
             weight = float(self.weight_label.text().replace(',', '.'))
+
+        target = 0
+        if self.target_edit.text():
+            target = int(self.target_edit.text())
 
         self.run_conf = RunConf(
             name=self.name_label.text(),
             weight=weight,
             load=float(self.load_combo_box.currentText()),
             pulley=self.pulley_checkbox.isChecked(),
+            target_check=self.target_checkbox.isChecked(),
+            target_value=target,
         )
         log.info(f"Run configuration: {self.run_conf}.")
         self.m_settings.setValue('run/name', self.run_conf.name)
         self.m_settings.setValue('run/weight', self.run_conf.weight)
         self.m_settings.setValue('run/load', self.run_conf.load)
         self.m_settings.setValue('run/pulley', self.run_conf.pulley)
+        self.m_settings.setValue('run/target_check', self.run_conf.target_check)
+        self.m_settings.setValue('run/target_value', self.run_conf.target_value)
         self.m_settings.sync()
         self.close()
 

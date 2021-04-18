@@ -120,6 +120,8 @@ class MainWindow(QMainWindow):
         # start updating graph
         self.graph_update_timer.start()
         self.connected_label.show()
+        if run_dialog.run_conf.target_check:
+            self.graph.add_target_line(run_dialog.run_conf.target_value)
 
     def stop(self):
         log.info("Stop button clicked!")
