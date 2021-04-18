@@ -240,27 +240,49 @@ class Data:
 
     @staticmethod
     def show_report(run_data: RunData):
+        # I am definitely not gonna teach HTML/CSS to anyone in the near future
         report_html = f"""
-        <table style="border: none;">
+        <style>
+          table, tr, td {{
+            border: none;
+            border-collapse: collapse;
+          }}
+          td {{
+            padding: 0.6em;
+            font-size: 25pt;
+            text-align: center;
+          }}
+          tr.header td {{
+            padding: 0.2em 0.1em;
+          }}
+          td.value_type {{
+            text-align: right;
+            padding: 0.6em 0.1em;
+          }}
+          .odd {{
+            background-color: silver;
+          }}
+        </style>
+        <table style="width:100%;">
         <tbody>
-          <tr><td></td><td colspan="2">Max</td><td colspan="2">Mean</td></tr>
-          <tr><td></td><td>Con</td><td>Ecc</td><td>Con</td><td>Ecc</td></tr>
-          <tr>
-            <td>Velocity:</td>
+          <tr class="header"><td></td><td colspan="2">max</td><td colspan="2">mean</td></tr>
+          <tr class="header"><td></td><td>con</td><td>ecc</td><td>con</td><td>ecc</td></tr>
+          <tr class="odd">
+            <td class="value_type">Velocity:</td>
             <td>{run_data.v_con_max:.2f}</td>
             <td>{run_data.v_ecc_max:.2f}</td>
             <td>{run_data.v_con_mean:.2f}</td>
             <td>{run_data.v_ecc_mean:.2f}</td>
           </tr>
           <tr>
-            <td>Force:</td>
+            <td class="value_type">Force:</td>
             <td>{run_data.f_con_max:.0f}</td>
             <td>{run_data.f_ecc_max:.0f}</td>
             <td>{run_data.f_con_mean:.0f}</td>
             <td>{run_data.f_ecc_mean:.0f}</td>
           </tr>
-          <tr>
-            <td>Power</td>
+          <tr class="odd">
+            <td class="value_type">Power:</td>
             <td>{run_data.p_con_max:.0f}</td>
             <td>{run_data.p_ecc_max:.0f}</td>
             <td>{run_data.p_con_mean:.0f}</td>
@@ -282,3 +304,17 @@ class Data:
         self.run_started = False
         self.run_saved = False
         log.info("Data cleared.")
+
+
+if __name__ == '__main__':
+    from PyQt5.QtWidgets import QApplication
+
+    data = RunData(
+        v_con_max=1.33, v_ecc_max=1.33, v_con_mean=0.88, v_ecc_mean=1.00,
+        f_con_max=2474, f_ecc_max=1915, f_con_mean=1654, f_ecc_mean=1143,
+        p_con_max=1876, p_ecc_max=1374, p_con_mean=1292, p_ecc_mean=1030,
+    )
+
+    app = QApplication([])
+    Data.show_report(run_data=data)
+    app.exec_()

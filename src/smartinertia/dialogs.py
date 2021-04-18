@@ -143,4 +143,5 @@ class ReportDialog(QDialog):
         main_layout = QVBoxLayout()
         main_layout.addWidget(QLabel(report))
         self.setLayout(main_layout)
+        self.setFixedSize(self.sizeHint())
         log.info("Opened report dialog.")
