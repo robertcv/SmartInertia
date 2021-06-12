@@ -60,9 +60,9 @@ def save_run(run_data: 'RunData', run_conf: RunConf):
 
 def save_data(data: 'DataSet'):
     """Save dataset to file."""
-    save_data_loc = os.path.join(APPDATA_PATH, "raw.p")
+    save_data_loc = os.path.join(APPDATA_PATH, "SmartInertia", "raw.p")
     try:
-        pickle.dump(data, open(save_data_loc, "wb"))
+        pickle.dump({"x": data.x, "y": data.y}, open(save_data_loc, "wb"))
         log.info(f"Saved raw run to file.")
     except:
         log.exception("Cannot save run data!")
