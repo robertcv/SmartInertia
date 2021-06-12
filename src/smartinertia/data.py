@@ -180,7 +180,7 @@ class Data:
 
         # remove first START_RUNS and more than COUNTED_RUNS
         exact_new_segment = exact_new_segment[START_RUNS:START_RUNS + COUNTED_RUNS + 1]
-        log.debug(f"number of segments: {len(exact_new_segment) - 1}, cut x: {filtered_data.x[exact_new_segment]}")
+        log.info(f"number of segments: {len(exact_new_segment) - 1}, cut x: {filtered_data.x[exact_new_segment]}")
 
         results = []
         for i, j in zip(exact_new_segment[:-1], exact_new_segment[1:]):
