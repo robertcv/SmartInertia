@@ -16,7 +16,7 @@ MIN_FREQ_START = 2
 SAMPLES_FOR_FILTER = 30
 
 SAMPLING_FREQ = 1000
-CUTOFF_FREQ = 10
+CUTOFF_FREQ = 5
 RADIUS = 0.015
 
 log = logging.getLogger(__name__)
