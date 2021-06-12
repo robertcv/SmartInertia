@@ -124,7 +124,13 @@ class Data:
 
         inter_data = interpolation(DataSet(x=self.raw_x[-SAMPLES_FOR_FILTER:],
                                            y=self.raw_y[-SAMPLES_FOR_FILTER:]))
-        filtered_data = butter_lowpass_filter(inter_data, cutoff=CUTOFF_FREQ)
+        try:
+            filtered_data = butter_lowpass_filter(inter_data, cutoff=CUTOFF_FREQ)
+        except Exception:
+            self.master._close_connection()
+            QMessageBox.warning(self.master, "Unrecoverable failure!",
+                                "The program encounter and invalid measurement.")
+            exit()
 
         frequency = filtered_data.y
         angular_velocity = frequency * 2 * np.pi
