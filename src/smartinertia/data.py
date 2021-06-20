@@ -138,11 +138,9 @@ class Data:
 
         angular_acceleration = derivative_gradient(DataSet(x=filtered_data.x,
                                                            y=angular_velocity)).y
-        linear_acceleration = derivative_gradient(DataSet(x=filtered_data.x,
-                                                          y=linear_velocity)).y
 
         force = np.abs(angular_acceleration * (self.run_conf.load / RADIUS))
-        force = force + (self.run_conf.weight * (9.8 + linear_acceleration))
+        force = force + (self.run_conf.weight * 9.8)
 
         power = force * linear_velocity
         # take middle value to negate side effect of processing appearing on edges
@@ -166,10 +164,8 @@ class Data:
         linear_velocity = angular_velocity * RADIUS
         angular_acceleration = derivative_gradient(DataSet(x=filtered_data.x,
                                                            y=angular_velocity)).y
-        linear_acceleration = derivative_gradient(DataSet(x=filtered_data.x,
-                                                          y=linear_velocity)).y
         force = np.abs(angular_acceleration * (self.run_conf.load / RADIUS))
-        force = force + (self.run_conf.weight * (9.8 + linear_acceleration))
+        force = force + (self.run_conf.weight * 9.8)
         power = force * linear_velocity
 
         # transform time of new bar to the closest position
