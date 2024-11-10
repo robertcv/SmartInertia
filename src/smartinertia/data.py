@@ -1,13 +1,14 @@
 import logging
 from collections import namedtuple
-from typing import Optional
+from typing import Optional, List
+from datetime import datetime
 
 import numpy as np
 from PyQt5.QtWidgets import QMessageBox
 from scipy.signal import argrelmax, butter, filtfilt
 
 from smartinertia.dialogs import ReportDialog, RunConf
-from smartinertia.save import save_data, save_run
+from smartinertia.save import save_data, save_run, save_run_more
 
 START_RUNS = 3
 COUNTED_RUNS = 6
@@ -146,11 +147,11 @@ class Data:
         # take middle value to negate side effect of processing appearing on edges
         return power[len(power) // 2]
 
-    def calc_stats(self) -> RunData:
+    def calc_stats(self, current_data_time) -> List[RunData]:
         """Calculate all the stats for the current run."""
         raw_dataset = DataSet(x=self.raw_x, y=self.raw_y)
         # save raw measurements for potential analysis
-        save_data(raw_dataset)
+        save_data(raw_dataset, current_data_time)
 
         # interpolate points as they are not equally spaced
         filtered_data = butter_lowpass_filter(
@@ -203,23 +204,7 @@ class Data:
                 p_ecc_mean=power[m:j].mean(),
             ))
 
-        # the end result statistics are the mean over all repetitions
-        end_result = RunData(
-            v_con_max=round(np.mean([r.v_con_max for r in results]), 2),
-            v_ecc_max=round(np.mean([r.v_ecc_max for r in results]), 2),
-            v_con_mean=round(np.mean([r.v_con_mean for r in results]), 2),
-            v_ecc_mean=round(np.mean([r.v_ecc_mean for r in results]), 2),
-            f_con_max=round(np.mean([r.f_con_max for r in results]), 0),
-            f_ecc_max=round(np.mean([r.f_ecc_max for r in results]), 0),
-            f_con_mean=round(np.mean([r.f_con_mean for r in results]), 0),
-            f_ecc_mean=round(np.mean([r.f_ecc_mean for r in results]), 0),
-            p_con_max=round(np.mean([r.p_con_max for r in results]), 0),
-            p_ecc_max=round(np.mean([r.p_ecc_max for r in results]), 0),
-            p_con_mean=round(np.mean([r.p_con_mean for r in results]), 0),
-            p_ecc_mean=round(np.mean([r.p_ecc_mean for r in results]), 0),
-        )
-
-        return end_result
+        return results
 
     def get_bar_data(self) -> list:
         return self.bar_h
@@ -234,11 +219,33 @@ class Data:
             QMessageBox.warning(self.master, "Insufficient measurement!",
                                 f"To ensure measurements accuracy {START_RUNS + COUNTED_RUNS + 1} repetitions are advised!\n"
                                 "Calculated metrics may be inaccurate!")
-        run_data = self.calc_stats()
+
+        # save data
+        current_data_time = datetime.now()
+        run_data = self.calc_stats(current_data_time)
+
+        # the end result statistics are the mean over all repetitions
+        end_result = RunData(
+            v_con_max=round(np.mean([r.v_con_max for r in run_data]), 2),
+            v_ecc_max=round(np.mean([r.v_ecc_max for r in run_data]), 2),
+            v_con_mean=round(np.mean([r.v_con_mean for r in run_data]), 2),
+            v_ecc_mean=round(np.mean([r.v_ecc_mean for r in run_data]), 2),
+            f_con_max=round(np.mean([r.f_con_max for r in run_data]), 0),
+            f_ecc_max=round(np.mean([r.f_ecc_max for r in run_data]), 0),
+            f_con_mean=round(np.mean([r.f_con_mean for r in run_data]), 0),
+            f_ecc_mean=round(np.mean([r.f_ecc_mean for r in run_data]), 0),
+            p_con_max=round(np.mean([r.p_con_max for r in run_data]), 0),
+            p_ecc_max=round(np.mean([r.p_ecc_max for r in run_data]), 0),
+            p_con_mean=round(np.mean([r.p_con_mean for r in run_data]), 0),
+            p_ecc_mean=round(np.mean([r.p_ecc_mean for r in run_data]), 0),
+        )
+
         if not self.run_saved:
-            save_run(run_data, self.run_conf)
+            save_run_more(run_data, self.run_conf, current_data_time)
+            save_run(end_result, self.run_conf, current_data_time)
             self.run_saved = True
-        self.show_report(run_data)
+
+        self.show_report(end_result)
 
     @staticmethod
     def show_report(run_data: RunData):
