@@ -15,7 +15,7 @@ Run module:
 python -m smartinertia
 ```
 
-### How to build
+### How to manually build
 
 Install build requirements:
 ```bash
@@ -26,3 +26,6 @@ To create the exe run:
 ```bash
 pyinstaller --name SmartInertia --paths=src\smartinertia --windowed --onefile --icon=icon.ico smartinertia_gui.py
 ```
+
+## Release / automatic build
+To create a new release and automatically build the .exe just push a tage with the new version to master.
