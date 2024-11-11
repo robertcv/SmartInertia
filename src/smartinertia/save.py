@@ -20,6 +20,11 @@ HEADER = [
 ]
 
 
+def iso2win(iso_timee: str) -> str:
+    """Fix datetime in iso formated string to be used in Windows file names."""
+    return iso_timee.replace(":", "-").split(".")[0]
+
+
 def save_run(run_data: 'RunData', run_conf: RunConf, current_data_time: datetime):
     """Save the results of this run into a file."""
     save_dir = os.path.join(DOCUMENTS_PATH, "SmartInertia")
@@ -62,7 +67,7 @@ def save_run_more(run_datas: List['RunData'], run_conf: RunConf, current_data_ti
     """Save the more results of this run into a file."""
 
     save_dir = os.path.join(DOCUMENTS_PATH, "SmartInertia", f"measurements_{current_data_time.strftime('%Y-%m-%d')}")
-    save_file = os.path.join(save_dir, f"{current_data_time.isoformat()}_{run_conf.name}_{run_conf.load}.xlsx")
+    save_file = os.path.join(save_dir, f"{iso2win(current_data_time.isoformat())}_{run_conf.name}_{run_conf.load}.xlsx")
 
     if not os.path.exists(save_dir):
         try:
@@ -92,7 +97,7 @@ def save_run_more(run_datas: List['RunData'], run_conf: RunConf, current_data_ti
 
 def save_data(data: 'DataSet', current_data_time: datetime):
     """Save dataset to file."""
-    save_data_loc = os.path.join(APPDATA_PATH, "SmartInertia", f"{current_data_time.isoformat()}.p")
+    save_data_loc = os.path.join(APPDATA_PATH, "SmartInertia", f"{iso2win(current_data_time.isoformat())}.p")
     try:
         pickle.dump({"x": data.x, "y": data.y}, open(save_data_loc, "wb"))
         log.info(f"Saved raw run to file.")
