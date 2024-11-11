@@ -1,6 +1,4 @@
 # Create release, build an executable and add it to release
-# https://www.data-dive.com/multi-os-deployment-in-cloud-using-pyinstaller-and-github-actions
-# https://github.com/mc51/Clipster-Desktop/blob/master/.github/workflows/build.yml
 
 name: Build release with exe
 
@@ -10,42 +8,15 @@ on:
       - 'v*'
 
 jobs:
-  createrelease:
-    name: Create Release
-    runs-on: ubuntu-20.04
-
-    steps:
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-      - name: Output Release URL File
-        run: echo "${{ steps.create_release.outputs.upload_url }}" > release_url.txt
-
-      - name: Save Release URL File for publish
-        uses: actions/upload-artifact@v4
-        with:
-          name: release_url
-          path: release_url.txt
-
-  build:
-    name: Create exe
-    needs: createrelease
-    runs-on: windows-2019
+  release:
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v3
 
       - name: Set up Python 3.8
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: '3.8'
 
@@ -63,25 +34,22 @@ jobs:
       - name: Build exe
         run: pyinstaller --name SmartInertia --paths=src\smartinertia --windowed --onefile --icon=icon.ico smartinertia_gui.py
 
-      - name: Load Release URL File from release job
-        uses: actions/download-artifact@v4
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
         with:
-          name: release_url
-
-      - name: Get Release File Name & Upload URL
-        id: get_release_info
-        shell: bash
-        run: |
-          value=`cat release_url/release_url.txt`
-          echo ::set-output name=upload_url::$value
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          upload_url: ${{ steps.get_release_info.outputs.upload_url }}
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./dist/SmartInertia.exe
           asset_name: SmartInertia.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          asset_content_type: application/octet-stream
