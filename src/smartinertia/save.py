@@ -1,9 +1,9 @@
 import logging
 import os
-import pickle
 from datetime import datetime
 from typing import List
 
+import numpy as np
 from openpyxl import Workbook, load_workbook
 from PyQt5.QtCore import QStandardPaths
 
@@ -95,11 +95,14 @@ def save_run_more(run_datas: List['RunData'], run_conf: RunConf, current_data_ti
         log.exception("Run couldn't be saved to new file!")
 
 
-def save_data(data: 'DataSet', current_data_time: datetime):
+def save_data(data: 'Data', run_conf: RunConf, current_data_time: datetime):
     """Save dataset to file."""
-    save_data_loc = os.path.join(APPDATA_PATH, "SmartInertia", f"{iso2win(current_data_time.isoformat())}.p")
+    save_dir = os.path.join(DOCUMENTS_PATH, "SmartInertia",
+                            f"measurements_{current_data_time.strftime('%Y-%m-%d')}")
+    save_file = os.path.join(save_dir,
+                             f"{iso2win(current_data_time.isoformat())}_{run_conf.name}_{run_conf.load}_raw.csv")
     try:
-        pickle.dump({"x": data.x, "y": data.y}, open(save_data_loc, "wb"))
+        np.savetxt(save_file, (data.raw_x, data.raw_y), delimiter=',')
         log.info(f"Saved raw run to file.")
     except:
         log.exception("Cannot save run data!")

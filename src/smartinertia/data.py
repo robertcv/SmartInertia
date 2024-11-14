@@ -147,11 +147,9 @@ class Data:
         # take middle value to negate side effect of processing appearing on edges
         return power[len(power) // 2]
 
-    def calc_stats(self, current_data_time) -> List[RunData]:
+    def calc_stats(self) -> List[RunData]:
         """Calculate all the stats for the current run."""
         raw_dataset = DataSet(x=self.raw_x, y=self.raw_y)
-        # save raw measurements for potential analysis
-        save_data(raw_dataset, current_data_time)
 
         # interpolate points as they are not equally spaced
         filtered_data = butter_lowpass_filter(
@@ -222,7 +220,9 @@ class Data:
 
         # save data
         current_data_time = datetime.now()
-        run_data = self.calc_stats(current_data_time)
+        # save raw measurements for potential analysis
+        save_data(self, self.run_conf, current_data_time)
+        run_data = self.calc_stats()
 
         # the end result statistics are the mean over all repetitions
         end_result = RunData(
