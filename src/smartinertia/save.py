@@ -100,9 +100,23 @@ def save_data(data: 'Data', run_conf: RunConf, current_data_time: datetime):
     save_dir = os.path.join(DOCUMENTS_PATH, "SmartInertia",
                             f"measurements_{current_data_time.strftime('%Y-%m-%d')}")
     save_file = os.path.join(save_dir,
-                             f"{iso2win(current_data_time.isoformat())}_{run_conf.name}_{run_conf.load}_raw.csv")
+                             f"{iso2win(current_data_time.isoformat())}_{run_conf.name}_{run_conf.load}_raw.xlsx")
+
+    if not os.path.exists(save_dir):
+        try:
+            os.mkdir(save_dir)
+        except:
+            log.exception("Couldn't create save directory!")
+
+    wb = Workbook()
+    sheet = wb.active
+    sheet.append(["time", "frequency"])
+
+    for x, y in zip(data.raw_x, data.raw_y):
+        sheet.append([x, y])
+
     try:
-        np.savetxt(save_file, (data.raw_x, data.raw_y), delimiter=',')
+        wb.save(filename=save_file)
         log.info(f"Saved raw run to file.")
     except:
         log.exception("Cannot save run data!")
